@@ -34,6 +34,12 @@ v2 changes
      this flag existed), and --memmap streams X_train/X_val out of the compressed .npz
      into .npy sidecars that are then memory-mapped, so an 850 MB corpus does not have to
      compete with the XLA arena for RAM.
+  9. float16 corpora are read without being widened on load. build_corpus_v2.py writes
+     X_* as float16 by default (--dtype fp16), because the log-mel floor is -11.51 and
+     float16 resolution is far below anything the model resolves. The corpus therefore
+     stays half the size on disk and in the memmap sidecar, and is upcast per batch --
+     the point being the first place that widens, rather than a second full-size copy
+     in RAM. Both --dtype fp16 and --dtype fp32 corpora train through this unchanged.
 
     python train_industrial_v2.py --data dataset_v4.npz --arch bcconformer_50k \
         --epochs 24 --fpr_budget 0.005 --save best_v4_50k.flax
@@ -359,7 +365,14 @@ def stream_npy_member_to_file(npz_path: str, member: str, out_path: str,
 
 
 def load_corpus(data_path: str, use_memmap: bool, cache_dir: str = "corpus_cache"):
-    """Returns (X_train, X_val, NpzFile). X_* are memmaps when use_memmap is set."""
+    """Returns (X_train, X_val, NpzFile). X_* are memmaps when use_memmap is set.
+
+    A float16 corpus is NOT widened here. The whole point of `build_corpus_v2.py
+    --dtype fp16` is that an 850 MB corpus stays 425 MB on disk and in the memmap
+    sidecar; inflating it back to float32 up front would hand the saving straight back
+    and, without --memmap, would put 850 MB of anonymous memory back on the machine.
+    The upcast is per batch in the training loop, and per scoring batch in score().
+    """
     data = np.load(data_path, allow_pickle=True)
     if not use_memmap:
         return data["X_train"], data["X_val"], data
@@ -401,6 +414,8 @@ def run_training(data_path="dataset_v2.npz", arch="bcconformer_50k", epochs=30,
     b_val = data["b_val"].astype(str) if "b_val" in data.files else None
 
     print(f" dataset            : {data_path}")
+    print(f" log-mel dtype      : {X_train.dtype}"
+          + ("  (upcast to float32 per batch)" if X_train.dtype != np.float32 else ""))
     print(f" train              : {len(X_train):,}  ({int((y_train==1).sum()):,} pos / {int((y_train==0).sum()):,} neg)")
     print(f" val                : {len(X_val):,}  ({int((y_val==1).sum()):,} pos / {int((y_val==0).sum()):,} neg)")
     if b_train is not None:
@@ -432,14 +447,17 @@ def run_training(data_path="dataset_v2.npz", arch="bcconformer_50k", epochs=30,
     if warm_start and os.path.exists(warm_start):
         with open(warm_start, "rb") as f:
             ck = serialization.msgpack_restore(f.read())
-        try:
-            variables = model.init(init_key, jnp.ones((1, 49, 40, 1), jnp.float32), train=False)
-            template = variables["params"]
-            init_params = serialization.from_bytes(template, ck["params"])
-            print(f" warm start         : {warm_start}")
-        except Exception as e:
-            print(f" warm start skipped ({str(e)[:60]})")
-            init_params = None
+        variables = model.init(init_key, jnp.ones((1, 49, 40, 1), jnp.float32), train=False)
+        template = variables["params"]
+        # msgpack_restore already returns a pytree of arrays, so this is from_state_dict.
+        # from_bytes wants raw bytes and raises, which used to be swallowed below and
+        # silently turned a fine-tune into a from-scratch run.
+        init_params = serialization.from_state_dict(template, ck["params"])
+        missing = set(template) ^ set(init_params)
+        if missing:
+            raise ValueError(f"warm start {warm_start} does not match {arch}: {sorted(missing)}")
+        print(f" warm start         : {warm_start}  "
+              f"({sum(x.size for x in jax.tree_util.tree_leaves(init_params)):,} params)")
 
     steps_per_epoch = len(X_train) // batch_size
     total_steps = epochs * steps_per_epoch
@@ -523,7 +541,12 @@ def run_training(data_path="dataset_v2.npz", arch="bcconformer_50k", epochs=30,
         losses, accs = [], []
         for s in range(steps_per_epoch):
             idx = perm[s * batch_size:(s + 1) * batch_size]
-            bx = X_train[idx]
+            # Upcast here, not at load time. A corpus written with build_corpus_v2.py
+            # --dtype fp16 stays float16 on disk and in the memmap sidecar, so the batch
+            # is the first point where the widened type is needed -- and it is
+            # batch-sized, so the augmentation below (which copies the batch) still runs
+            # in float32 rather than rounding every gain-augmented sample to float16.
+            bx = np.asarray(X_train[idx], dtype=np.float32)
             by = y_train[idx]
             bx = spec_augment(bx, rng_np, prob=spec_aug_prob)
             bx = gain_augment(bx, rng_np, prob=gain_aug_prob, span_db=gain_aug_db)

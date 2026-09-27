@@ -737,7 +737,10 @@ class RelPosSelfAttention(nn.Module):
         rel = jnp.arange(t)[:, None] - jnp.arange(t)[None, :]      # (T, T)
         rel = rel + (t - 1)                                          # shift into [0, 2T-2]
         bias = self.param("rel_bias", nn.initializers.zeros, (2 * t - 1, h))
-        logits = logits + bias[rel].transpose(2, 0, 1)[None]        # (B, H, T, T)
+        # jnp.take, not bias[rel]: flax restores checkpoint params as numpy arrays, and
+        # numpy.__getitem__ with a traced index inside jit raises TracerArrayConversionError.
+        # jnp.take gathers for either backend.
+        logits = logits + jnp.take(bias, rel, axis=0).transpose(2, 0, 1)[None]  # (B,H,T,T)
 
         w = jax.nn.softmax(logits, axis=-1)
         w = nn.Dropout(rate=self.dropout, deterministic=not train)(w)

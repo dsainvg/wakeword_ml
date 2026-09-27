@@ -33,6 +33,11 @@ Split discipline: the 80/20 split is stratified by (label, negative source kind)
 negative category keeps its share in both splits. With ~28k negatives the val FPR
 resolves to ~0.02% instead of the single-sample 0.12% v1 was reporting.
 
+Storage dtype: X_* are written as float16 by default (--dtype fp16). The log-mel front
+end floors at log(1e-5) = -11.51 and rarely exceeds +5, so float16 resolution (~1e-3) is
+far below anything the model resolves, and it halves the artifact and the download.
+train_industrial_v2.py upcasts per batch, so either dtype trains identically.
+
     python build_corpus_v2.py --pos 14000 --neg 28000 --out dataset_v2.npz
 """
 
@@ -1240,6 +1245,12 @@ def main():
     ap.add_argument("--profile", type=str, default="v4", choices=sorted(PROFILES))
     ap.add_argument("--pool_cache", type=str, default="cache",
                     help="directory for the TTS pool cache ('' to disable)")
+    ap.add_argument("--dtype", type=str, default="fp16", choices=["fp16", "fp32"],
+                    help="storage dtype for the log-mel X arrays. fp16 halves the "
+                         "artifact and the download; the log-mel front end floors at "
+                         "log(1e-5) = -11.51 and rarely exceeds +5, so float16 "
+                         "resolution (~1e-3) is far below anything the model resolves. "
+                         "train_industrial_v2.py upcasts per batch either way.")
     args = ap.parse_args()
 
     _PROFILE.clear()
@@ -1303,16 +1314,28 @@ def main():
         for j in jobs:
             results.append(_run_chunk(j))
     else:
-        with ProcessPoolExecutor(
-            max_workers=args.workers,
-            initializer=_init_worker,
-            initargs=(noise_paths, speech_flacs, speech_cmds, kw_bases, conf_bases,
-                      args.seed, args.profile, filler_bases),
-        ) as ex:
-            futs = [ex.submit(_run_chunk, j) for j in jobs]
-            for k, f in enumerate(futs):
-                results.append(f.result())
-                print(f"  chunk {k+1}/{len(jobs)} done", flush=True)
+        try:
+            with ProcessPoolExecutor(
+                max_workers=args.workers,
+                initializer=_init_worker,
+                initargs=(noise_paths, speech_flacs, speech_cmds, kw_bases, conf_bases,
+                          args.seed, args.profile, filler_bases),
+            ) as ex:
+                futs = [ex.submit(_run_chunk, j) for j in jobs]
+                for k, f in enumerate(futs):
+                    results.append(f.result())
+                    print(f"  chunk {k+1}/{len(jobs)} done", flush=True)
+        except Exception as e:
+            # A fork-based pool needs __main__ picklable by reference, which is not
+            # guaranteed on every interpreter/platform. Serial is slower but always
+            # correct, so a pool that cannot start must not lose the whole build.
+            print(f"[Build] parallel build failed ({str(e)[:120]}), falling back to serial",
+                  flush=True)
+            results = []
+            _init_worker(noise_paths, speech_flacs, speech_cmds, kw_bases, conf_bases,
+                         args.seed, args.profile, filler_bases)
+            for j in jobs:
+                results.append(_run_chunk(j))
 
     X = np.concatenate([r[0] for r in results], axis=0)
     y = np.concatenate([r[1] for r in results], axis=0)
@@ -1323,10 +1346,11 @@ def main():
 
     if len(X.shape) == 3:
         X = np.expand_dims(X, axis=-1)
-    X = X.astype(np.float32)
+    x_dtype = np.float16 if args.dtype == "fp16" else np.float32
+    X = X.astype(x_dtype)
 
     tr, va = stratified_split(groups, y, 0.2, seed=args.seed, buckets=buckets)
-    print(f"\n[Split] train={len(tr):,}  val={len(va):,}")
+    print(f"\n[Split] train={len(tr):,}  val={len(va):,}  X dtype {np.dtype(x_dtype).name}")
 
     np.savez_compressed(
         args.out,

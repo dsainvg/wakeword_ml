@@ -30,7 +30,7 @@ def load_predict_fn(checkpoint_path: str, arch: str):
         data = f.read()
     checkpoint = serialization.msgpack_restore(data)
     model = get_model(arch, num_classes=2)
-    params = checkpoint["params"]
+    params = jax.tree_util.tree_map(jnp.asarray, checkpoint["params"])
 
     @jax.jit
     def predict_batch(x):

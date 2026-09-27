@@ -68,7 +68,10 @@ class StreamingKWSEngine:
                 state_dict = serialization.from_bytes(template, encoded)
             except ValueError:
                 state_dict = serialization.msgpack_restore(encoded)
-            self.params = state_dict["params"]
+            # msgpack_restore / from_bytes hand back numpy leaves. The streaming
+            # predictor is jitted, and a numpy-style index inside the model would then try
+            # to convert a tracer, so promote the params to jnp arrays once at load time.
+            self.params = jax.tree_util.tree_map(jnp.asarray, state_dict["params"])
             self.val_acc = state_dict.get("val_acc", 1.0)
             stored_thr = state_dict.get("threshold", 0.85)
             self.confidence_threshold = float(
