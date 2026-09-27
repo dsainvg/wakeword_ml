@@ -9,6 +9,7 @@ Simulates real-time on-device keyword spotting on audio streams:
 - Real-time latency tracking
 """
 
+import collections
 import os
 import time
 import numpy as np
@@ -23,7 +24,8 @@ class StreamingKWSEngine:
     def __init__(self, checkpoint_path: str = "best_kws_model.flax", arch: str = "bcresnet",
                  confidence_threshold: float = None, ema_alpha: float = 0.60,
                  consecutive_required: int = 2, refractory_steps: int = 15,
-                 aggregation: str = "maxhold", hold_decay: float = 0.85):
+                 aggregation: str = "maxhold", hold_decay: float = 0.85,
+                 confirm_window: int = 0):
         """confidence_threshold=None -> use the operating point stored in the
         checkpoint (v2+ trainers store the threshold that meets the FPR budget).
 
@@ -33,6 +35,13 @@ class StreamingKWSEngine:
         an EMA-confirmed detector discards most real detections. A decaying peak hold
         still requires `consecutive_required` frames above threshold, so isolated
         spikes are rejected just as well, but it confirms on a realistic burst.
+
+        confirm_window=0 (default) keeps the strict "N consecutive windows" rule.
+        A positive value relaxes it to "N of the last `confirm_window` windows",
+        which matters when the keyword is faint: a 0.5 s word at low SNR can clear
+        the threshold on windows 1 and 3 while dipping on 2, and 2-of-3 confirms that
+        where 2-of-2 never can. It is a detector change, not a model change, so it
+        must be re-measured against false alarms before being adopted.
         """
         self.extractor = AudioFeatureExtractor()
         self.arch = arch
@@ -41,6 +50,8 @@ class StreamingKWSEngine:
         self.refractory_steps = refractory_steps
         self.aggregation = aggregation
         self.hold_decay = hold_decay
+        self._hit_hist = collections.deque(maxlen=1)
+        self.confirm_window = confirm_window      # through the setter, so it takes effect
 
         # Reconstruct architecture template
         self.model = get_model(self.arch, num_classes=2)
@@ -82,6 +93,15 @@ class StreamingKWSEngine:
                 self.refractory_steps = int(state_dict["deploy_refractory_steps"])
             if "deploy_need" in state_dict:
                 self.consecutive_required = int(state_dict["deploy_need"])
+            # "N of the last M windows" is part of the operating point, so a checkpoint
+            # that measured 2-of-3 must not deploy as two consecutive windows.
+            if "deploy_confirm_window" in state_dict:
+                self.confirm_window = int(state_dict["deploy_confirm_window"])
+            elif "deploy_span" in state_dict:
+                span = int(state_dict["deploy_span"])
+                self.confirm_window = span if span > self.consecutive_required else 0
+            else:
+                self.confirm_window = 0
             self.aggregation = aggregation
             self.param_count = sum(x.size for x in jax.tree_util.tree_leaves(self.params))
 
@@ -90,8 +110,9 @@ class StreamingKWSEngine:
             print(f" Model Parameters : {self.param_count:,} (INT8 Footprint: ~{self.param_count / 1024:.2f} KB)")
             print(f" Detection Thresh : {self.confidence_threshold:.4f}"
                   f"{'  (from checkpoint)' if confidence_threshold is None else '  (override)'}")
-            print(f" Confirmation     : {self.aggregation} {self.consecutive_required} hits, "
-                  f"{self.refractory_steps * 0.1:.1f}s refractory")
+            print(f" Confirmation     : {self.aggregation} "
+                  f"{self.consecutive_required}-of-{self.confirm_window or self.consecutive_required}"
+                  f" hits, {self.refractory_steps * 0.1:.1f}s refractory")
             if "tpr_offset_stress" in state_dict:
                 print(f" Stored TPR       : {state_dict['tpr_offset_stress'] * 100:.2f}% "
                       f"@ FPR <= {state_dict.get('fpr_budget', 0) * 100:.2f}%")
@@ -123,9 +144,25 @@ class StreamingKWSEngine:
 
         # Debouncing filter state
         self.ema = 0.0
+        self._hit_hist.clear()
         self.hold = 0.0
         self.consecutive_hits = 0
         self.lockout = 0
+
+    @property
+    def confirm_window(self) -> int:
+        """0 = strict N-consecutive. >0 = N of the last `confirm_window` windows."""
+        return self._confirm_window
+
+    @confirm_window.setter
+    def confirm_window(self, value: int) -> None:
+        # A property, not a plain attribute: sweep_threshold.py and
+        # finalize_checkpoint.py assign confirmation settings after construction, and a
+        # plain field would leave the hit history at its old length, so "2 of 3" would
+        # silently behave like "2 of 1" and never confirm.
+        self._confirm_window = int(value)
+        hist = list(self._hit_hist)[-self._confirm_window:] if self._confirm_window else []
+        self._hit_hist = collections.deque(hist, maxlen=max(1, self._confirm_window))
 
     def _aggregate(self, raw_prob: float) -> float:
         if self.aggregation == "maxhold":
@@ -164,18 +201,27 @@ class StreamingKWSEngine:
         if self.lockout > 0:
             self.lockout -= 1
 
-        # Confirmation: N consecutive windows above threshold, then refractory lockout
+        # Confirmation: N of the last `confirm_window` windows above threshold (or N
+        # strictly consecutive when confirm_window == 0), then a refractory lockout.
         keyword_detected = False
         if score >= self.confidence_threshold:
             self.consecutive_hits += 1
-            if self.consecutive_hits >= self.consecutive_required and self.lockout == 0:
+            if self.confirm_window > 1:
+                self._hit_hist.append(1)
+                confirmed = sum(self._hit_hist) >= self.consecutive_required
+            else:
+                confirmed = self.consecutive_hits >= self.consecutive_required
+            if confirmed and self.lockout == 0:
                 keyword_detected = True
                 self.consecutive_hits = 0
                 self.lockout = self.refractory_steps
                 self.ema = 0.0
                 self.hold = 0.0
+                self._hit_hist.clear()
         else:
             self.consecutive_hits = 0
+            if self.confirm_window > 1:
+                self._hit_hist.append(0)
 
         return keyword_detected, score, latency_ms
 
@@ -183,6 +229,7 @@ class StreamingKWSEngine:
         """Clears audio buffer and detection state."""
         self.audio_buffer.fill(0)
         self.ema = 0.0
+        self._hit_hist.clear()
         self.hold = 0.0
         self.consecutive_hits = 0
         self.lockout = 0

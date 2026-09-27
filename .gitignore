@@ -53,10 +53,10 @@ credentials.json
 !best_v6_compact24k.flax
 !best_v7_full108k.flax
 !best_v8_speech_mined.flax
-!best_v8_production.flax
 !best_v9_fullbank.flax
 !best_v10_remined.flax
 !best_v11_soundscape_mined.flax
+!best_v11_production.flax
 !best_v12_hardpos.flax
 !best_v13_lowsnr.flax
 

@@ -1,5 +1,30 @@
 # Ultra-Lightweight Keyword Spotting (KWS): "Amaze"
 
+> ## Current status (2026-09-27)
+>
+> The production model is **`best_v11_production.flax`** — `bcconformer_v3`, 84,865
+> params (82.9 KB INT8), frozen at threshold **0.68**, peak-hold 2-of-2, 1.5 s refractory.
+> Those settings live in the checkpoint and are read automatically by
+> `StreamingKWSEngine`.
+>
+> Measured on real audio — 3.78 h of soundscapes across 74 classes plus 0.772 h of
+> continuous LibriSpeech:
+>
+> | | previous production | current |
+> |---|---|---|
+> | streaming recall (20/12/6/0 dB) | 37.0% | **78.0%** |
+> | false alarms per hour | 5.81 | **4.42** |
+> | continuous-speech false alarms | 5.21/h | **0.00/h** |
+> | clean held-out keyword detection | 65.2% | **91.8%** |
+> | params | 49,882 | 84,865 |
+>
+> `agents.md` is the engineering record: §10.1 why the architecture changed, §10.2 why
+> the confirmation policy is part of the model, §11 what is still weak.
+>
+> The figures in the intro below are the **v1 prototype** and describe a 5,266-parameter
+> BC-ResNet-1 on a synthetic dataset. They are kept for the history of the pipeline and
+> must not be quoted as the model's accuracy — `agents.md` §11 says the same.
+
 An end-to-end Python prototype for **TinyML Keyword Spotting (KWS)** targeting the custom wake word **"Amaze"** (/əˈmeɪz/), designed to satisfy strict low-power microcontroller evaluation metrics:
 - **Target Keyword:** `"Amaze"`
 - **RAM Footprint:** < 256 KB (~18.0 KB utilized, **7.0% of budget**)

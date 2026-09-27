@@ -114,6 +114,9 @@ def main():
     out["deploy_agg"] = agg
     out["deploy_need"] = need
     out["deploy_span"] = span
+    # The span has to reach the deployed engine, otherwise the checkpoint says "2 of 3"
+    # while kws_engine.py still requires two strictly consecutive windows.
+    out["deploy_confirm_window"] = int(span) if span > need else 0
     out["deploy_refractory_steps"] = args.refractory
     out["deploy_recall"] = float(recall)
     out["deploy_fa_per_hour"] = float(total)
