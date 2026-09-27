@@ -7,26 +7,35 @@
 dataset/
 dataset_*/
 noise_bank/
-noise_bank_v2/
 speech_corpus/
 corpus_cache/
 cache/
 logs/
 .kaggle-outputs/
 *.wav
+*.flac
+*.mp3
+*.ogg
+
+# The noise-bank inventory is 247 KB of CSV naming every clip, its class and its
+# duration. The audio is 0.5 GB, the index is what makes stratified sampling
+# reproducible, so the index is tracked and the clips it points at are not.
+noise_bank_v2/*
+!noise_bank_v2/index.csv
 
 # ==============================================================================
-# Credentials. The notebook hardcodes a live Kaggle API key, and the session export
-# below contains the conversation where it was pasted. Tracking either one would put a
-# working credential in the history, where deleting the file later does NOT remove it.
-#
-# To track the notebook, move the key to an environment variable first:
-#     KAGGLE_API_KEY = os.environ["KAGGLE_API_KEY"]
-# then remove these two lines from this file.
+# Credentials. The notebook reads its Kaggle key from the environment; kaggle.json
+# and the session transcript dumps are local only.
 # ==============================================================================
-kaggle_self_contained.ipynb
 session-ses_*.md
 kaggle.json
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*_rsa
+credentials.json
 
 # ==============================================================================
 # Model weights: the experiments are reproducible from the code, so only the two
@@ -47,7 +56,15 @@ venv/
 env/
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
 .ipynb_checkpoints/
+.coverage
+htmlcov/
+scratch/
+tmp/
+*.log
+*.tmp
+*.bak
 
 # ==============================================================================
 # OS / editor

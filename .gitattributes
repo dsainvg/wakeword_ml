@@ -8,6 +8,5 @@
 *.npy binary
 *.wav binary
 
-# The notebook is JSON but is large; treat it as text so diffs are meaningful if it is
-# ever tracked (it is currently gitignored because it embeds an API key).
+# The notebook is JSON but is large; treat it as text so diffs are meaningful.
 *.ipynb text eol=lf
