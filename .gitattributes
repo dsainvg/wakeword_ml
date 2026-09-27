@@ -1,0 +1,13 @@
+# Normalise line endings in the repository; keep them LF in the working tree too, so
+# git stops warning on every add and diffs stay clean across machines.
+* text=auto eol=lf
+
+# Checkpoints and corpora are binary. Never let git try to normalise or diff them.
+*.flax binary
+*.npz binary
+*.npy binary
+*.wav binary
+
+# The notebook is JSON but is large; treat it as text so diffs are meaningful if it is
+# ever tracked (it is currently gitignored because it embeds an API key).
+*.ipynb text eol=lf

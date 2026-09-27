@@ -1,0 +1,59 @@
+# ==============================================================================
+# Corpora and everything derived from them. All rebuildable, none belongs in git.
+# This is ~3.6 GB: dataset_v5 alone is 904 MB and speech_corpus is 1.2 GB.
+# ==============================================================================
+*.npz
+*.npy
+dataset/
+dataset_*/
+noise_bank/
+noise_bank_v2/
+speech_corpus/
+corpus_cache/
+cache/
+logs/
+.kaggle-outputs/
+*.wav
+
+# ==============================================================================
+# Credentials. The notebook hardcodes a live Kaggle API key, and the session export
+# below contains the conversation where it was pasted. Tracking either one would put a
+# working credential in the history, where deleting the file later does NOT remove it.
+#
+# To track the notebook, move the key to an environment variable first:
+#     KAGGLE_API_KEY = os.environ["KAGGLE_API_KEY"]
+# then remove these two lines from this file.
+# ==============================================================================
+kaggle_self_contained.ipynb
+session-ses_*.md
+kaggle.json
+
+# ==============================================================================
+# Model weights: the experiments are reproducible from the code, so only the two
+# checkpoints the documentation actually references are tracked.
+# ==============================================================================
+*.flax
+!best_v3_50k.flax
+!best_50k_kws_model.flax
+
+# ==============================================================================
+# Python
+# ==============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# ==============================================================================
+# OS / editor
+# ==============================================================================
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
+*.swp
