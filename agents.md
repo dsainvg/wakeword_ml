@@ -429,24 +429,92 @@ Param distribution: 3 × improved block 67,248 (78%) · frequency projection 13,
 raw 49×10 time-frequency grid would be the most expensive thing on an ESP32-S3 and
 temporal attention is where the discrimination actually lives.
 
+### 10.1 `bcconformer_v3` — Proven, and the current production model
+
+`bcconformer_v2` above was **never trained**, and the reason is worth recording: its
+absolute temporal embedding is a *positional prior*, not a position encoder. v3 drops it
+for a **relative** position bias, `b[i - j + (T-1)]` added to the attention logits, which
+depends only on the distance between two frames. Shifting the whole sequence leaves every
+logit unchanged, so the bias expresses "prefer nearby context" and structurally cannot
+express "the keyword belongs at frame 14". Pooling also moves from attentive statistics
+pooling to a **soft-OR** (mean + log-sum-exp + max), because a softmax attention pool is
+free to collapse onto one preferred frame — the same mechanism that produces a positional
+prior.
+
+**84,865 params, 82.9 KB INT8.** Trained on the 108,001-sample / 26,999-val 24-bucket
+corpus (fp16) over 2,272 noise clips (74 classes) and 2,703 LibriSpeech recordings.
+
+**What closed the §11 gaps, in order of effect:**
+
+| iteration | change | streaming recall | total FA/h |
+|---|---|---|---|
+| v3 (previous production) | 49,882 params, 50k model | 37.0% | 5.81 |
+| v7 | v3 architecture, full corpus | 49.8% @0.90 | 25.25 |
+| v8 | + 8,833 mined continuous-speech false alarms | 65.8% @0.90 | 4.76 |
+| **v11** | **+ 661 mined soundscape false alarms** | **79.8% @0.68** | **4.42** |
+| v12 / v13 / v14 | hard-positive and low-SNR fine-tunes | *rejected — see below* | — |
+
+Three things this established:
+
+1. **Validation FPR is not a deployment predictor, exactly as §9.1 warned.** v7 had the
+   best validation TPR of any model built (74.25% @0.5% FPR) and the worst real-audio
+   behaviour: 11-15 false alarms per hour on continuous speech, invisible in the
+   validation tables. Only measuring FA on real audio found it.
+2. **Mining the failure mode is the lever.** Each of the two large gains came from
+   training on the exact windows the model fired on, not from more data or more epochs.
+3. **Every hard-positive fine-tune so far trades false alarms for recall.** v12 reached
+   98% clean-audio detection but 31 FA/h; v13 hit 266-552 FA/h; v14 with 30k general
+   negatives protected continuous speech (0.00 FA/h) but lost the soundscape margin
+   (33.6 FA/h at 0.68) and landed at 65.0% within budget — worse than v11. Hard-negative
+   mining only covers what the model fires on *now*, and a distribution shift during
+   fine-tuning creates new alarms above the old mining threshold, so each round has to be
+   re-mined and re-measured. **This is the open problem, not a solved one.**
+
+**Deployment point:** threshold 0.68, peak-hold, 2-of-2, 1.5 s refractory — the best
+streaming recall within the ≤6 FA/h budget.
+
+---
+
+## 10.2 The Detector Is Part of the Model
+
+Confirmation policy is not a deployment detail; it changed the headline number more than
+any hyper-parameter. A 0.5 s keyword occupies only 2-3 windows of a 1 s sliding stream,
+so requiring two *consecutive* windows rejects detections where the model fires on
+windows 1 and 3 but dips on 2.
+
+| policy (v13 @0.68) | clean | 20 dB | 12 dB | 6 dB | 1 dB | 0.5 dB | mean |
+|---|---|---|---|---|---|---|---|
+| 2-of-2 | 97.5% | 95.0% | 93.8% | 82.5% | 67.5% | 67.5% | 84.0% |
+| 2-of-3 | 97.5% | 95.0% | 93.8% | 82.5% | 68.8% | 67.5% | 84.2% |
+| 1-of-2 | 100.0% | 98.8% | 98.8% | 92.5% | 87.5% | 83.8% | **93.5%** |
+
+Non-consecutive confirmation (2-of-3) barely helps, because with a peak-hold the second
+hit is usually already retained by the hold decay. What helps is dropping to a single
+hit — worth 16-20 points at low SNR. On v11 that costs false alarms (4.42 → 16.08 FA/h at
+0.68), so within the ≤6 FA/h budget **2-of-2 at 0.68 still wins**. The choice is a real
+trade against the budget, not a free win, and it is re-measured whenever the model
+changes.
+
 ---
 
 ## 11. What Is Still Weak
 
-* **Recall below 6 dB SNR collapses** (38.9% → 7.5%). Degraded-speech positives need
-  their own augmentation branch.
-* **Offset sensitivity at the right edge of the window** (40.6% → 14.1%). Random
-  placement helped a lot; an explicit "keyword at every position" copy schedule, or the
-  position embedding in §10, would flatten it further.
-* **Continuous-speech FA rests on 3 trigger events over 0.576 h.** The 5.21/hour figure
-  has a wide confidence interval.
-* **Validation FPR is not a deployment predictor** (§9.1). The corpus needs un-normalised
-  natural long-form speech as a negative class for the val FPR to mean anything.
-* **Positives are still ~95% synthetic TTS.** Only 8 real human "amaze" windows exist
-  in LibriSpeech. Human recordings of the keyword remain the highest-value missing data.
-* **`bcconformer_v2` is unproven** (§10).
+* **Recall below 6 dB SNR is still the weak regime.** Streaming recall is 95.3% at 20 dB
+  and 83.1% at 0 dB with the loose policy; frame-level recall at 0.5 dB SNR is 67.5%.
+  The physics is unforgiving — at 0.5 dB the keyword is ~1% of the window energy — but
+  three attempts to fix it by fine-tuning all cost more false alarms than they bought.
+* **Clean-audio detection is 91.8%, not the 95% the design target asks for.** The three
+  models that reached 98% (v12, v13) did so by inflating confidence globally, and their
+  FA was unusable. This is the same trade as above, unresolved.
+* **Continuous-speech FA rests on few trigger events.** The 4.42/hour figure comes from
+  0.772 h of speech; treat the confidence interval as wide.
+* **Positives are still ~95% synthetic TTS.** Only 8 real human "amaze" windows exist in
+  LibriSpeech. Human recordings of the keyword remain the highest-value missing data, and
+  they are the only thing that would settle the clean-audio question honestly.
 * **v1's `dataset_mega.npz` results are only comparable through the v2 benchmark.** Do
   not quote 79.5% TPR / 99.28% AUC from the v1 tables.
+* **The 2,272-clip noise bank is a single indoor corpus.** UrbanSound8K, device-specific
+  captures and real room impulse responses are all still missing.
 
 ---
 
@@ -472,17 +540,44 @@ temporal attention is where the discrimination actually lives.
 
 | File | Size | Contents |
 |---|---|---|
-| `best_v3_50k.flax` | 194 KB | **production checkpoint**, threshold 0.86, peak-hold 2-of-2, 1.5 s refractory |
+| `best_v11_production.flax` | 335 KB | **production checkpoint**, `bcconformer_v3`, 84,865 params, threshold 0.68, peak-hold 2-of-2, 1.5 s refractory |
+| `best_v3_50k.flax` | 194 KB | previous production, 49,882 params, threshold 0.86, kept for comparison |
 | `best_v4_50k.flax` | 197 KB | 16-bucket corpus, epoch 12/22, rejected on real audio (§9.1) |
 | `best_v5_50k.flax` | 197 KB | 24-bucket corpus, epoch 4/22, stopped early |
 | `best_v3_100k.flax` | 543 KB | capacity experiment |
 | `best_v2_50k.flax` | 197 KB | over-augmented-positives intermediate, kept as a record |
 | `best_50k_kws_model.flax` | 194 KB | v1 baseline |
+| `best_v6_compact24k.flax` | 335 KB | 24k compact corpus; no babble or real speech, rejected |
+| `best_v7_full108k.flax` | 335 KB | first full-corpus v3 model; best validation, worst real audio |
+| `best_v8_speech_mined.flax` | 335 KB | + 8,833 mined continuous-speech false alarms; speech FA → 0 |
+| `best_v9_fullbank.flax` | 335 KB | retrained on the completed 2,272-clip bank |
+| `best_v10_remined.flax` | 335 KB | re-mined speech negatives; traded soundscape robustness away |
+| `best_v11_soundscape_mined.flax` | 335 KB | + 661 mined soundscape false alarms; **the production weights** |
+| `best_v12_hardpos.flax` | 335 KB | hard-positive fine-tune; 98% clean but 31 FA/h, rejected |
+| `best_v13_lowsnr.flax` | 335 KB | + 879 mined 0.5-3 dB misses; 266-552 FA/h, rejected |
 | `dataset_v5.npz` | 904 MB | 24-bucket corpus (108,001 train / 26,999 val) |
 | `dataset_v4.npz` | 803 MB | 16-bucket corpus, superseded |
 | `dataset_v3.npz` | 335 MB | production corpus for the v3 checkpoint |
 | `keyword_bases_eval.npy` | 4.3 MB | 98 held-out keyword waveforms (66 usable) |
-| `noise_bank_v2/` | 0.5 GB | 3,346 clips + `index.csv` |
+| `speech_corpus/LibriSpeech/` | 1.1 GB | 2,703 dev-clean flacs, the real-speech negatives |
+| `noise_bank_v2/` | 0.5 GB | 2,272 clips across 74 classes + `index.csv` |
+
+The iteration chain above is tracked in full rather than pruned. Each checkpoint is
+84,865 params (82.9 KB INT8) so the set costs ~3 MB, and the recipe that produced the
+production model — mine the failure mode, fine-tune, re-measure on real audio — is only
+reproducible from the intermediates. v14 (30k general negatives) was trained and
+rejected; it is not tracked.
+
+### New tooling (2026-09-27)
+
+| File | Purpose |
+|---|---|
+| `mine_speech_fa.py` | hard negatives from continuous speech **and** the soundscape bank, batched on the GPU |
+| `mine_hard_positives.py` | the keyword windows the model scores *below* threshold |
+| `mine_deployed_positive_misses.py` | misses in the deployed configuration (random offset over a real bed) on fresh TTS material, so the held-out eval set stays clean |
+| `build_finetune_corpus.py` | assembles mined hard positives + hard negatives + anchors into a trainable corpus |
+| `evaluate_quiet_room.py` | detection at 0.5-1 dB SNR with a paired control arm from the same beds |
+| `diagnose_clean_vs_quiet.py` | splits a recall loss into model vs detector, and compares confirmation policies |
 
 ---
 
@@ -491,8 +586,10 @@ temporal attention is where the discrimination actually lives.
 ```python
 from kws_engine import StreamingKWSEngine
 
-# threshold 0.86, peak-hold 2-of-2 and 1.5 s refractory are read from the checkpoint
-engine = StreamingKWSEngine(checkpoint_path="best_v3_50k.flax", arch="bcconformer_50k")
+# threshold 0.68, peak-hold 2-of-2, 1.5 s refractory and the confirmation window are
+# all read from the checkpoint -- nothing is hard-coded here
+engine = StreamingKWSEngine(checkpoint_path="best_v11_production.flax",
+                           arch="bcconformer_v3")
 
 while stream_open:
     chunk = mic.read(1600)                     # 100 ms @ 16 kHz
@@ -501,9 +598,11 @@ while stream_open:
         start_cloud_asr_capture()
 ```
 
-**ESP32-S3 footprint:** 49,882 params → 48.7 KB INT8 flash, ~42 KB SRAM arena.
-TFLite Micro conversion is unchanged; only the threshold (0.86) and the confirmation
-policy (peak-hold 2-of-2, 1.5 s refractory) are new relative to v1.
+**ESP32-S3 footprint:** 84,865 params → 82.9 KB INT8 flash, ~42 KB SRAM arena.
+TFLite Micro conversion is unchanged; relative to v1 the threshold (0.68) and the
+architecture are new. Relative to the previous production checkpoint the parameter
+count went from 49,882 to 84,865, which is 82.9 KB INT8 — still comfortably inside the
+budget, but it is a 1.7× increase and worth knowing before it goes on the board.
 
 **Hardware note:** the frozen operating point assumes an INMP441 with its default
 sensitivity and no AGC. If the board applies a different preamp gain, re-freeze the

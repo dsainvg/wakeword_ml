@@ -38,12 +38,27 @@ kaggle.json
 credentials.json
 
 # ==============================================================================
-# Model weights: the experiments are reproducible from the code, so only the two
+# Model weights: the experiments are reproducible from the code, so only the
 # checkpoints the documentation actually references are tracked.
+#
+# Tracked as of 2026-09-27: the iteration chain that produced the new production
+# model. Each is 84,865 params (82.9 KB INT8) unless noted, so the whole set is
+# ~3 MB -- cheap enough to keep every step, which matters because the winning
+# recipe (mine the failure mode, fine-tune, re-measure on real audio) is only
+# reproducible from the intermediate checkpoints.
 # ==============================================================================
 *.flax
 !best_v3_50k.flax
 !best_50k_kws_model.flax
+!best_v6_compact24k.flax
+!best_v7_full108k.flax
+!best_v8_speech_mined.flax
+!best_v9_fullbank.flax
+!best_v10_remined.flax
+!best_v11_soundscape_mined.flax
+!best_v11_production.flax
+!best_v12_hardpos.flax
+!best_v13_lowsnr.flax
 
 # ==============================================================================
 # Python

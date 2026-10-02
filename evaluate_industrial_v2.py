@@ -146,7 +146,9 @@ def load_predict(checkpoint_path, arch):
     with open(checkpoint_path, "rb") as f:
         ck = serialization.msgpack_restore(f.read())
     model = get_model(arch, num_classes=2)
-    params = ck["params"]
+    # msgpack_restore hands back numpy leaves. jitting with them is fine for most ops but
+    # makes any numpy-style indexing inside the model convert a tracer, so promote them.
+    params = jax.tree_util.tree_map(jnp.asarray, ck["params"])
 
     @jax.jit
     def predict(x):
