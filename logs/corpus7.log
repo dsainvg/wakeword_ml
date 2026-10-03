@@ -1,0 +1,52 @@
+[Profile] v4: buckets=True  bitcrush=(0.02, 0.05)  level=(-50.0, -14.0) dBFS
+  TTS pool cache loaded: cache\tts_pools.pkl (kw=333, conf=1578, filler=1032)
+  filler bases: 1032
+  keyword bases cached for evaluation: keyword_bases.npy
+[NoiseBank] 4191 clips across 80 classes
+[SpeechBank] 2703 LibriSpeech flacs, 0 Speech Commands wavs
+
+[Build] 40,000 positives + 80,000 negatives across 12 chunks on 3 workers
+  chunk 1/12 done
+  chunk 2/12 done
+  chunk 3/12 done
+  chunk 4/12 done
+  chunk 5/12 done
+  chunk 6/12 done
+  chunk 7/12 done
+  chunk 8/12 done
+  chunk 9/12 done
+  chunk 10/12 done
+  chunk 11/12 done
+  chunk 12/12 done
+
+[Split] train=96,000  val=24,000  X dtype float16
+  positives: 39,996   negatives: 80,004
+  bucket                       |        n |  share | loss w |         lvl dBFS
+  P0_word_direct               |    4,066 |   3.4% |   1.00 |   -50.1..-12.8
+  P1_word_one_noise            |   16,006 |  13.3% |   1.15 |   -50.3..-12.6
+  P2_word_two_noise            |   11,117 |   9.3% |   1.25 |   -55.1..-12.8
+  P3_word_two_noise_hard       |    8,807 |   7.3% |   1.30 |   -54.3..-12.9
+  N0_filler_direct             |    4,002 |   3.3% |   0.80 |   -50.3..-12.7
+  N1_filler_one_noise          |    3,984 |   3.3% |   0.90 |   -50.2..-13.2
+  N2_filler_two_noise          |    3,109 |   2.6% |   1.00 |   -50.8..-13.4
+  N3_filler_two_noise_hard     |    2,405 |   2.0% |   1.10 |   -52.4..-13.2
+  N4_real_direct               |    3,958 |   3.3% |   0.90 |   -53.9..-12.6
+  N5_real_one_noise            |    4,733 |   3.9% |   1.00 |   -53.8..-13.2
+  N6_real_two_noise            |    3,261 |   2.7% |   1.10 |   -51.2..-13.1
+  N7_real_two_noise_hard       |    2,363 |   2.0% |   1.20 |   -52.7..-12.8
+  N8_babble_direct             |    3,146 |   2.6% |   1.00 |   -50.3..-13.3
+  N9_babble_one_noise          |    4,911 |   4.1% |   1.10 |   -50.6..-13.4
+  N10_babble_two_noise         |    4,036 |   3.4% |   1.20 |   -51.5..-13.0
+  N11_babble_two_noise_hard    |    4,809 |   4.0% |   1.30 |   -52.8..-12.4
+  N12_noise_direct             |    8,093 |   6.7% |   0.90 |  -127.5..-12.5
+  N13_noise_one_noise          |    9,649 |   8.0% |   1.00 |  -128.2..-12.2
+  N14_noise_two_noise          |    4,052 |   3.4% |   1.00 |  -122.9..-12.8
+  N15_noise_two_noise_hard     |    2,363 |   2.0% |   1.10 |   -82.1..-12.8
+  N16_confus_direct            |    2,403 |   2.0% |   1.00 |   -50.2..-13.4
+  N17_confus_one_noise         |    3,999 |   3.3% |   1.10 |   -50.1..-13.1
+  N18_confus_two_noise         |    3,156 |   2.6% |   1.10 |   -54.6..-13.1
+  N19_confus_two_noise_hard    |    1,572 |   1.3% |   1.20 |   -54.5..-13.4
+  file: dataset_v7.npz  (385.7 MB)
+  elapsed: 535.7s
+CORPUS_EXIT=0 
+ALLDONE 

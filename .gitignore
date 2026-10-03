@@ -1,4 +1,4 @@
-# ==============================================================================
+﻿# ==============================================================================
 # Corpora and everything derived from them. All rebuildable, none belongs in git.
 # This is ~3.6 GB: dataset_v5 alone is 904 MB and speech_corpus is 1.2 GB.
 # ==============================================================================
@@ -10,7 +10,7 @@ noise_bank/
 speech_corpus/
 corpus_cache/
 cache/
-logs/
+#logs/
 .kaggle-outputs/
 *.wav
 *.flac
@@ -89,3 +89,11 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# PyTorch / tooling added for the ESP32-S3 compliance work
+*.out
+corpus_cache/
+
+# Keep training/corpus logs as evidence for the iteration write-ups
+!logs/
+!logs/*.log

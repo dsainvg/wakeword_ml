@@ -1,0 +1,36 @@
+========================================================================================================
+CAP: 1.50 MMAC  ->  floor 0.391 ms  (budget 11.11 ms at 100 ms hop)
+v3 reference: 84,865 params | 11.24 MMAC | 2.93 ms floor
+========================================================================================================
+swept 168 configs; 33 fit under 1.50 MMAC
+
+TOP OPTIONS UNDER THE CAP (ranked by params = capacity headroom)
+dim/blocks/ffn/ts                                params      MMAC     T     floor
+------------------------------------------------------------------------------------
+d80  b2  ff2 ts4              129675    1.448M     0   0.377ms
+d64  b2  ff4 ts4              118603    1.476M     0   0.384ms
+d64  b2  ff3 ts4              102091    1.369M     0   0.357ms
+d56  b3  ff2 ts4               98399    1.409M     0   0.367ms
+d48  b4  ff2 ts4               97827    1.496M     0   0.390ms
+d56  b2  ff4 ts4               92395    1.356M     0   0.353ms
+d48  b3  ff3 ts4               88359    1.407M     0   0.366ms
+d64  b2  ff2 ts4               85579    1.263M     0   0.329ms
+d40  b4  ff3 ts4               83635    1.477M     0   0.385ms
+d56  b2  ff3 ts4               79739    1.263M     0   0.329ms
+d48  b3  ff2 ts4               74391    1.287M     0   0.335ms
+d40  b3  ff4 ts4               73375    1.364M     0   0.355ms
+d40  b4  ff2 ts4               70675    1.344M     0   0.350ms
+d32  b5  ff3 ts4               69887    1.475M     0   0.384ms
+d48  b2  ff4 ts4               69579    1.237M     0   0.322ms
+d56  b2  ff2 ts4               67083    1.170M     0   0.305ms
+d32  b4  ff4 ts4               64899    1.405M     0   0.366ms
+d40  b3  ff3 ts4               63655    1.264M     0   0.329ms
+
+RECOMMENDED TIERS (accuracy-first ordering inside the cap):
+tier               params      MMAC     T     floor  under cap
+------------------------------------------------------------------
+tier_a_best_acc    125959    1.532M     0   0.399ms NO -- exceeds
+tier_b_balanced    129715    2.828M     0   0.736ms NO -- exceeds
+tier_c_deep        103615    3.002M     0   0.782ms NO -- exceeds
+tier_d_cheapest     73359    0.867M     0   0.226ms        yes
+EXIT=0 

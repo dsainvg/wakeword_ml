@@ -1,0 +1,24 @@
+============================================================================================
+GOAL: params > 84865 (v3)  |  MAC < 5.0 MMAC  |  floor < 2.93 ms (v3)
+v3 baseline: 84,865 params | 11.24 MMAC | 2.93 ms floor | 480 KB RAM
+============================================================================================
+arch            params    MMAC    T     floor  int8 KB verdict
+--------------------------------------------------------------------------------------------
+hc_balanced     125959  2.616M    0   0.681ms    123.0    PASS
+hc_fast          85579  2.171M    0   0.565ms     83.6    PASS
+hc_deep         144699  3.316M    0   0.864ms    141.3    PASS
+hc_wideffn      175495  3.230M    0   0.841ms    171.4    PASS
+hc_max          271719  3.376M    0   0.879ms    265.4    PASS
+hc_tiny_time    125959  1.532M    0   0.399ms    123.0    PASS
+--------------------------------------------------------------------------------------------
+
+Mandate checks passed:
+  relative position bias b[i-j] present, NO absolute embedding
+  SoftORPool permutation-invariant over time (verified numerically)
+  MelAttnPool (learned over mel) present
+  DeltaStack has 0 parameters
+  depthwise-separable stems only
+
+Train with:
+  py train_torch.py --data dataset_v7.npz --arch hc_balanced --epochs 40 --out best_hc.pt
+HC_EXIT=0 

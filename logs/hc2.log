@@ -1,0 +1,51 @@
+====================================================================================================
+GOAL: more params than v3 (84,865) at the lowest possible MAC.
+v3 baseline: 84,865 params | 11.24 MMAC | 2.93 ms floor | 480 KB RAM
+====================================================================================================
+
+HC  (up to 3.4 MMAC)
+arch            params      MMAC    T     floor  int8 KB  verdict
+----------------------------------------------------------------------------
+hc_balanced     125959    2.616M   24   0.681ms    123.0     PASS
+hc_fast          85579    2.171M   24   0.565ms     83.6     PASS
+hc_deep         144699    3.316M   24   0.864ms    141.3     PASS
+hc_wideffn      175495    3.230M   24   0.841ms    171.4     PASS
+hc_max          271719    3.376M   24   0.879ms    265.4     PASS
+hc_tiny_time    125959    1.532M   12   0.399ms    123.0     PASS
+----------------------------------------------------------------------------
+
+M1  (1.5 MMAC cap)
+arch            params      MMAC    T     floor  int8 KB  verdict
+----------------------------------------------------------------------------
+m1_a            129675    1.448M   12   0.377ms    126.6     PASS
+m1_b            118603    1.476M   12   0.384ms    115.8     PASS
+m1_c             98399    1.409M   12   0.367ms     96.1     PASS
+m1_d             97827    1.496M   12   0.390ms     95.5     PASS
+m1_e_t24         63655    2.237M   24   0.583ms     62.2     over
+m1_f_min         73359    0.867M   12   0.226ms     71.6     over
+----------------------------------------------------------------------------
+
+TIME BUYS CAPACITY
+  m1_a          129675 params  1.448 MMAC   0.377 ms floor
+  hc_balanced   125959 params  2.616 MMAC   0.681 ms floor
+  -> m1_a carries +3% params at 55% of the arithmetic
+
+Mandate checks passed on m1_a:
+  relative position bias b[i-j] present, NO absolute embedding
+  SoftORPool permutation-invariant over time (verified numerically)
+  MelAttnPool (learned over mel) present
+  DeltaStack has 0 parameters
+
+Train any tier with:
+  py train_torch.py --data dataset_v8_accent.npz --arch m1_a --epochs 40 --out best_m1a.pt
+
+Mandate checks passed:
+  relative position bias b[i-j] present, NO absolute embedding
+  SoftORPool permutation-invariant over time (verified numerically)
+  MelAttnPool (learned over mel) present
+  DeltaStack has 0 parameters
+  depthwise-separable stems only
+
+Train with:
+  py train_torch.py --data dataset_v7.npz --arch hc_balanced --epochs 40 --out best_hc.pt
+EXIT=0 

@@ -1,0 +1,35 @@
+WARNING: Ignoring invalid distribution ~ip (C:\Users\Victus\AppData\Local\Programs\Python\Python311\Lib\site-packages)
+Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+Collecting edge-tts
+  Downloading edge_tts-7.2.8-py3-none-any.whl (31 kB)
+Collecting aiohttp<4.0.0,>=3.8.0 (from edge-tts)
+  Downloading aiohttp-3.14.3-cp311-cp311-win_amd64.whl (481 kB)
+Requirement already satisfied: certifi>=2023.11.17 in C:\Users\Victus\AppData\Local\Programs\Python\Python311\Lib\site-packages (from edge-tts) (2026.7.22)
+Collecting tabulate<1.0.0,>=0.4.4 (from edge-tts)
+  Downloading tabulate-0.10.0-py3-none-any.whl (39 kB)
+Requirement already satisfied: typing-extensions<5.0.0,>=4.1.0 in C:\Users\Victus\AppData\Local\Programs\Python\Python311\Lib\site-packages (from edge-tts) (4.16.0)
+Collecting aiohappyeyeballs>=2.5.0 (from aiohttp<4.0.0,>=3.8.0->edge-tts)
+  Downloading aiohappyeyeballs-2.7.1-py3-none-any.whl (15 kB)
+Collecting aiosignal>=1.4.0 (from aiohttp<4.0.0,>=3.8.0->edge-tts)
+  Downloading aiosignal-1.4.0-py3-none-any.whl (7.5 kB)
+Collecting attrs>=17.3.0 (from aiohttp<4.0.0,>=3.8.0->edge-tts)
+  Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+Collecting frozenlist>=1.1.1 (from aiohttp<4.0.0,>=3.8.0->edge-tts)
+  Downloading frozenlist-1.8.0-cp311-cp311-win_amd64.whl (44 kB)
+Collecting multidict<7.0,>=4.5 (from aiohttp<4.0.0,>=3.8.0->edge-tts)
+  Downloading multidict-6.9.1-cp311-cp311-win_amd64.whl (59 kB)
+Collecting propcache>=0.2.0 (from aiohttp<4.0.0,>=3.8.0->edge-tts)
+  Downloading propcache-0.5.4-cp311-cp311-win_amd64.whl (46 kB)
+Collecting yarl<2.0,>=1.17.0 (from aiohttp<4.0.0,>=3.8.0->edge-tts)
+  Downloading yarl-1.25.1-cp311-cp311-win_amd64.whl (102 kB)
+Requirement already satisfied: idna>=2.0 in C:\Users\Victus\AppData\Local\Programs\Python\Python311\Lib\site-packages (from yarl<2.0,>=1.17.0->aiohttp<4.0.0,>=3.8.0->edge-tts) (3.20)
+WARNING: Ignoring invalid distribution ~ip (C:\Users\Victus\AppData\Local\Programs\Python\Python311\Lib\site-packages)
+Installing collected packages: tabulate, propcache, multidict, frozenlist, attrs, aiohappyeyeballs, yarl, aiosignal, aiohttp, edge-tts
+  WARNING: The script tabulate.exe is installed in 'C:\Users\Victus\AppData\Local\Programs\Python\Python311\Scripts' which is not on PATH.
+  Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
+  WARNING: The scripts edge-playback.exe and edge-tts.exe are installed in 'C:\Users\Victus\AppData\Local\Programs\Python\Python311\Scripts' which is not on PATH.
+  Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
+
+WARNING: Ignoring invalid distribution ~ip (C:\Users\Victus\AppData\Local\Programs\Python\Python311\Lib\site-packages)
+Successfully installed aiohappyeyeballs-2.7.1 aiohttp-3.14.3 aiosignal-1.4.0 attrs-26.1.0 edge-tts-7.2.8 frozenlist-1.8.0 multidict-6.9.1 propcache-0.5.4 tabulate-0.10.0 yarl-1.25.1
+TTS_EXIT=0 

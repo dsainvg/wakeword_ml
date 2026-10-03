@@ -1,0 +1,26 @@
+==========================================================================
+checkpoint: best_hc_balanced.pt  (518.7 KB)
+==========================================================================
+arch           hc_balanced
+epoch          32
+recorded TPR   0.8322
+recorded AUC   0.9940
+threshold      0.8457
+params         125959
+MAC            2615506 (floor 0.681 ms)
+state_dict     77 tensors
+load_state_dict OK (strict=True, no missing/unexpected keys)
+MAC recomputed  2615506  -> matches recorded: YES
+
+val (24000, 49, 40, 1)  pos 7998  neg 16002
+
+RECOMPUTED from the reloaded weights:
+  AUC                 0.9940
+  TPR @ 0.5% FPR     0.8322   (thr 0.8457, actual fpr 0.0050)
+  TPR @ 1.0% FPR     0.8853   (thr 0.7486, actual fpr 0.0100)
+  TPR @ 2.0% FPR     0.9377   (thr 0.5753, actual fpr 0.0200)
+  offset recall @saved thr  0.5336
+  mean P(kw) speech 0.9133   noise 0.0594
+
+saved threshold 0.8457  vs  recomputed 0.8457  -> consistent
+VCK_EXIT=0 

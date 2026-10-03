@@ -1,0 +1,59 @@
+==============================================================================
+data dataset_v6.npz  arch kws_tight  epochs 30 batch 256  device cuda
+  GPU: NVIDIA GeForce RTX 4050 Laptop GPU  VRAM 6.0 GB
+==============================================================================
+  sidecar corpus_cache\dataset_v6_X_train.npy (33602, 49, 40, 1) float16 (132 MB, 1s)
+  sidecar corpus_cache\dataset_v6_X_val.npy (8398, 49, 40, 1) float16 (33 MB, 0s)
+train (33602, 49, 40, 1) float16  pos 11,203 neg 22,399
+val   (8398, 49, 40, 1) float16  pos 2,801 neg 5,597
+buckets: 24 distinct
+kws_tight: 16,383 params  1,127,798.0 MAC  floor 0.294 ms  (37.8x headroom in 11.11 ms)
+
+ep  0  loss 1.0078  auc 0.5476  tpr@0.500% 0.0021  thr 0.7777  acc 0.6640  offset-recall 0.0007
+ep  1  loss 0.4035  auc 0.6219  tpr@0.500% 0.0200  thr 0.6232  acc 0.6699  offset-recall 0.0078
+ep  2  loss 0.2556  auc 0.7062  tpr@0.500% 0.0353  thr 0.6457  acc 0.6750  offset-recall 0.0113
+ep  3  loss 0.2295  auc 0.7178  tpr@0.500% 0.0339  thr 0.6491  acc 0.6746  offset-recall 0.0111
+ep  4  loss 0.2221  auc 0.7707  tpr@0.500% 0.0557  thr 0.6587  acc 0.6818  offset-recall 0.0191
+ep  5  loss 0.2144  auc 0.7941  tpr@0.500% 0.0596  thr 0.6722  acc 0.6831  offset-recall 0.0156
+ep  6  loss 0.2081  auc 0.8269  tpr@0.500% 0.0650  thr 0.8082  acc 0.6849  offset-recall 0.0219
+ep  7  loss 0.2016  auc 0.8400  tpr@0.500% 0.0721  thr 0.7057  acc 0.6873  offset-recall 0.0280
+ep  8  loss 0.1986  auc 0.8530  tpr@0.500% 0.0803  thr 0.8238  acc 0.6900  offset-recall 0.0328
+ep  9  loss 0.1963  auc 0.8619  tpr@0.500% 0.0810  thr 0.7352  acc 0.6903  offset-recall 0.0282
+ep 10  loss 0.1932  auc 0.8503  tpr@0.500% 0.0735  thr 0.7561  acc 0.6878  offset-recall 0.0304
+ep 11  loss 0.1882  auc 0.8721  tpr@0.500% 0.0918  thr 0.7626  acc 0.6939  offset-recall 0.0360
+ep 12  loss 0.1878  auc 0.8733  tpr@0.500% 0.0732  thr 0.7353  acc 0.6877  offset-recall 0.0250
+ep 13  loss 0.1833  auc 0.8824  tpr@0.500% 0.1028  thr 0.7325  acc 0.6975  offset-recall 0.0386
+ep 14  loss 0.1803  auc 0.8886  tpr@0.500% 0.0882  thr 0.6893  acc 0.6927  offset-recall 0.0356
+ep 15  loss 0.1779  auc 0.8895  tpr@0.500% 0.1067  thr 0.7992  acc 0.6989  offset-recall 0.0456
+ep 16  loss 0.1785  auc 0.8921  tpr@0.500% 0.1117  thr 0.6489  acc 0.7005  offset-recall 0.0436
+ep 17  loss 0.1748  auc 0.9007  tpr@0.500% 0.1235  thr 0.7659  acc 0.7045  offset-recall 0.0564
+ep 18  loss 0.1733  auc 0.9053  tpr@0.500% 0.1157  thr 0.7948  acc 0.7018  offset-recall 0.0582
+ep 19  loss 0.1706  auc 0.9031  tpr@0.500% 0.1292  thr 0.7447  acc 0.7064  offset-recall 0.0592
+ep 20  loss 0.1681  auc 0.9073  tpr@0.500% 0.1214  thr 0.7463  acc 0.7037  offset-recall 0.0571
+ep 21  loss 0.1685  auc 0.9109  tpr@0.500% 0.1296  thr 0.7596  acc 0.7065  offset-recall 0.0653
+ep 22  loss 0.1679  auc 0.9136  tpr@0.500% 0.1371  thr 0.7183  acc 0.7090  offset-recall 0.0651
+ep 23  loss 0.1633  auc 0.9150  tpr@0.500% 0.1407  thr 0.7493  acc 0.7102  offset-recall 0.0699
+ep 24  loss 0.1637  auc 0.9141  tpr@0.500% 0.1560  thr 0.7274  acc 0.7153  offset-recall 0.0727
+ep 25  loss 0.1630  auc 0.9168  tpr@0.500% 0.1400  thr 0.7569  acc 0.7099  offset-recall 0.0790
+ep 26  loss 0.1612  auc 0.9183  tpr@0.500% 0.1578  thr 0.7407  acc 0.7159  offset-recall 0.0809
+ep 27  loss 0.1615  auc 0.9171  tpr@0.500% 0.1482  thr 0.7397  acc 0.7127  offset-recall 0.0718
+ep 28  loss 0.1596  auc 0.9174  tpr@0.500% 0.1446  thr 0.7463  acc 0.7115  offset-recall 0.0710
+ep 29  loss 0.1613  auc 0.9175  tpr@0.500% 0.1496  thr 0.7465  acc 0.7131  offset-recall 0.0731
+
+==============================================================================
+BEST (by TPR at 0.500% FPR budget)
+  epoch          26
+  TPR            0.1578
+  FPR            0.0048
+  threshold      0.7407
+  AUC            0.9183
+  accuracy@thr   0.7159
+  offset recall  0.0809  <- position robustness
+  MAC            1127798 (0.294 ms floor)
+  params         16383
+  wall clock     5.6 min
+  checkpoint     best_kwstight.pt
+==============================================================================
+history -> train_result.json
+TRAIN_EXIT=0 
+ALLDONE 
