@@ -1,0 +1,28 @@
+================================================================================================
+TARGETS: params > 84865 (v3)   MAC < 5.0 MMAC   floor < 2.93 ms (v3)
+v3 reference: 84,865 params, 11.24 MMAC, 2.93 ms floor, 480 KB RAM
+================================================================================================
+
+swept 32 configs; 32 ran; 24 satisfy params>84865 AND <5 MMAC
+
+CANDIDATES THAT MEET BOTH (sorted by MAC, i.e. fastest first)
+name                       params      MMAC    floor   int8 KB
+----------------------------------------------------------------
+A_wide_d64_b2_ts2           85579    2.171M   0.565ms     83.6
+B_deep_d48_b4_ts2           97827    2.596M   0.676ms     95.5
+A_wide_d64_b3_ts2          125959    2.616M   0.681ms    123.0
+A_wide_d96_b2_ts2          183243    2.764M   0.720ms    178.9
+C_wideffn_d64_b3_f3        150727    2.923M   0.761ms    147.2
+B_deep_d48_b5_ts2          121263    2.956M   0.770ms    118.4
+B_deep_d64_b4_ts2          166339    3.060M   0.797ms    162.4
+C_wideffn_d64_b3_f4        175495    3.230M   0.841ms    171.4
+B_deep_d48_b6_ts2          144699    3.316M   0.864ms    141.3
+A_wide_d128_b2_ts2         318795    3.356M   0.874ms    311.3
+A_wide_d96_b3_ts2          271719    3.376M   0.879ms    265.4
+C_wideffn_d80_b3_f3        230375    3.380M   0.880ms    225.0
+
+MAC vs TIME, holding width fixed (why time is the lever):
+  time_stride=1 -> T=49  params 124583  MAC  4.053M  floor 1.055 ms
+  time_stride=2 -> T=24  params 125959  MAC  2.616M  floor 0.681 ms
+  time_stride=4 -> T=12  params 125959  MAC  1.532M  floor 0.399 ms
+EXPLORE_EXIT=0 

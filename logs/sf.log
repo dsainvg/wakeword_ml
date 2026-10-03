@@ -1,0 +1,37 @@
+====================================================================================================
+Fine sweep under 1.50 MMAC (floor 0.391 ms)
+Finding from iter4: WIDTH > TIME for accuracy per MAC
+  d=64 T=24 b=3 -> TPR 83.2%   vs   d=40 T=24 b=3 -> TPR 78.4%
+====================================================================================================
+swept; 132 configs fit under the cap
+
+TOP 16 BY QUALITY PROXY  (sqrt(params)/mac^0.25)
+dim/b/ffn/ts                         params      MMAC    T    proxy
+--------------------------------------------------------------------
+d96  b2  ff1.00  ts4   146187    1.474M   12  10.973
+d80  b2  ff2.00  ts4   129675    1.448M   12  10.380
+d80  b2  ff1.75  ts4   123235    1.415M   12  10.178
+d72  b3  ff1.00  ts4   125751    1.475M   12  10.176
+d80  b2  ff1.50  ts4   116795    1.382M   12   9.968
+d64  b3  ff1.75  ts4   119767    1.492M   12   9.902
+d80  b2  ff1.25  ts4   110355    1.348M   12   9.749
+d64  b3  ff1.50  ts4   113575    1.452M   12   9.709
+d72  b2  ff2.00  ts4   106443    1.356M   12   9.562
+d80  b2  ff1.00  ts4   103915    1.315M   12   9.519
+d64  b3  ff1.25  ts4   107383    1.412M   12   9.506
+d72  b2  ff1.75  ts4   101223    1.326M   12   9.376
+d64  b3  ff1.00  ts4   101191    1.372M   12   9.295
+d56  b4  ff1.00  ts4   104403    1.462M   12   9.292
+d96  b1  ff2.00  ts4    94767    1.246M   12   9.214
+d72  b2  ff1.50  ts4    96003    1.296M   12   9.184
+
+WIDEST under the cap (max capacity, for the params-first reading):
+d96  b2  ff1.00  ts4   146187 params     1.474M  T=12
+d80  b2  ff2.00  ts4   129675 params     1.448M  T=12
+d72  b3  ff1.00  ts4   125751 params     1.475M  T=12
+d80  b2  ff1.75  ts4   123235 params     1.415M  T=12
+d64  b3  ff1.75  ts4   119767 params     1.492M  T=12
+d80  b2  ff1.50  ts4   116795 params     1.382M  T=12
+d64  b3  ff1.50  ts4   113575 params     1.452M  T=12
+d80  b2  ff1.25  ts4   110355 params     1.348M  T=12
+EXIT=0 

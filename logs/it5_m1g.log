@@ -1,0 +1,67 @@
+==============================================================================
+data dataset_v8_accent.npz  arch m1_g_wide  epochs 40 batch 256  device cuda
+  GPU: NVIDIA GeForce RTX 4050 Laptop GPU  VRAM 6.0 GB
+==============================================================================
+train (96000, 49, 40, 1) float16  pos 31,997 neg 64,003
+val   (24000, 49, 40, 1) float16  pos 7,999 neg 16,001
+buckets: 24 distinct
+m1_g_wide: 146,187 params  1,473,962.0 MAC  floor 0.384 ms  (28.9x headroom in 11.11 ms)
+
+ep  0  loss 0.6757  auc 0.7803  tpr@0.500% 0.0268  thr 0.7416  acc 0.6723  offset-recall 0.0135
+ep  1  loss 0.2650  auc 0.8595  tpr@0.500% 0.0474  thr 0.7544  acc 0.6792  offset-recall 0.0219
+ep  2  loss 0.2095  auc 0.8835  tpr@0.500% 0.0728  thr 0.7550  acc 0.6876  offset-recall 0.0280
+ep  3  loss 0.1984  auc 0.9064  tpr@0.500% 0.1153  thr 0.7593  acc 0.7018  offset-recall 0.0590
+ep  4  loss 0.1891  auc 0.9067  tpr@0.500% 0.1434  thr 0.6467  acc 0.7112  offset-recall 0.0753
+ep  5  loss 0.1884  auc 0.9282  tpr@0.500% 0.1568  thr 0.7236  acc 0.7156  offset-recall 0.0987
+ep  6  loss 0.1735  auc 0.9373  tpr@0.500% 0.1981  thr 0.7102  acc 0.7294  offset-recall 0.1400
+ep  7  loss 0.1659  auc 0.9424  tpr@0.500% 0.2677  thr 0.8051  acc 0.7526  offset-recall 0.1855
+ep  8  loss 0.1587  auc 0.9533  tpr@0.500% 0.3147  thr 0.8612  acc 0.7682  offset-recall 0.2357
+ep  9  loss 0.1495  auc 0.9553  tpr@0.500% 0.3557  thr 0.7960  acc 0.7819  offset-recall 0.2530
+ep 10  loss 0.1454  auc 0.9616  tpr@0.500% 0.3874  thr 0.7616  acc 0.7925  offset-recall 0.2613
+ep 11  loss 0.1367  auc 0.9677  tpr@0.500% 0.4834  thr 0.7285  acc 0.8245  offset-recall 0.3832
+ep 12  loss 0.1289  auc 0.9684  tpr@0.500% 0.4883  thr 0.7110  acc 0.8261  offset-recall 0.3678
+ep 13  loss 0.1252  auc 0.9732  tpr@0.500% 0.5599  thr 0.8080  acc 0.8500  offset-recall 0.4553
+ep 14  loss 0.1180  auc 0.9740  tpr@0.500% 0.5482  thr 0.8417  acc 0.8461  offset-recall 0.4616
+ep 15  loss 0.1154  auc 0.9745  tpr@0.500% 0.5551  thr 0.7510  acc 0.8484  offset-recall 0.4644
+ep 16  loss 0.1088  auc 0.9788  tpr@0.500% 0.5949  thr 0.8253  acc 0.8617  offset-recall 0.4972
+ep 17  loss 0.1048  auc 0.9812  tpr@0.500% 0.6312  thr 0.7243  acc 0.8738  offset-recall 0.5601
+ep 18  loss 0.1007  auc 0.9821  tpr@0.500% 0.6562  thr 0.8227  acc 0.8821  offset-recall 0.5790
+ep 19  loss 0.0974  auc 0.9845  tpr@0.500% 0.6960  thr 0.7099  acc 0.8953  offset-recall 0.6044
+ep 20  loss 0.0941  auc 0.9842  tpr@0.500% 0.6756  thr 0.7899  acc 0.8885  offset-recall 0.6011
+ep 21  loss 0.0910  auc 0.9854  tpr@0.500% 0.6978  thr 0.7714  acc 0.8960  offset-recall 0.6263
+ep 22  loss 0.0888  auc 0.9869  tpr@0.500% 0.7052  thr 0.7759  acc 0.8984  offset-recall 0.6241
+ep 23  loss 0.0850  auc 0.9873  tpr@0.500% 0.7083  thr 0.8363  acc 0.8995  offset-recall 0.6367
+ep 24  loss 0.0813  auc 0.9869  tpr@0.500% 0.7123  thr 0.8114  acc 0.9008  offset-recall 0.6610
+ep 25  loss 0.0797  auc 0.9878  tpr@0.500% 0.7423  thr 0.7192  acc 0.9108  offset-recall 0.6782
+ep 26  loss 0.0780  auc 0.9878  tpr@0.500% 0.7483  thr 0.7470  acc 0.9128  offset-recall 0.6864
+ep 27  loss 0.0760  auc 0.9890  tpr@0.500% 0.7577  thr 0.8499  acc 0.9159  offset-recall 0.6803
+ep 28  loss 0.0739  auc 0.9893  tpr@0.500% 0.7580  thr 0.7548  acc 0.9160  offset-recall 0.6773
+ep 29  loss 0.0723  auc 0.9899  tpr@0.500% 0.7692  thr 0.8023  acc 0.9197  offset-recall 0.6988
+ep 30  loss 0.0702  auc 0.9901  tpr@0.500% 0.7727  thr 0.7654  acc 0.9209  offset-recall 0.6992
+ep 31  loss 0.0693  auc 0.9903  tpr@0.500% 0.7836  thr 0.7441  acc 0.9245  offset-recall 0.7263
+ep 32  loss 0.0678  auc 0.9905  tpr@0.500% 0.7873  thr 0.7961  acc 0.9258  offset-recall 0.7253
+ep 33  loss 0.0661  auc 0.9903  tpr@0.500% 0.7708  thr 0.7674  acc 0.9203  offset-recall 0.7211
+ep 34  loss 0.0655  auc 0.9907  tpr@0.500% 0.7748  thr 0.8110  acc 0.9216  offset-recall 0.7250
+ep 35  loss 0.0642  auc 0.9906  tpr@0.500% 0.7752  thr 0.8085  acc 0.9217  offset-recall 0.7272
+ep 36  loss 0.0632  auc 0.9907  tpr@0.500% 0.7738  thr 0.8137  acc 0.9213  offset-recall 0.7172
+ep 37  loss 0.0638  auc 0.9908  tpr@0.500% 0.7845  thr 0.7940  acc 0.9248  offset-recall 0.7324
+ep 38  loss 0.0632  auc 0.9909  tpr@0.500% 0.7832  thr 0.7856  acc 0.9244  offset-recall 0.7294
+ep 39  loss 0.0625  auc 0.9909  tpr@0.500% 0.7793  thr 0.7881  acc 0.9231  offset-recall 0.7274
+
+==============================================================================
+BEST (by TPR at 0.500% FPR budget)
+  epoch          32
+  TPR            0.7873
+  FPR            0.0050
+  threshold      0.7961
+  AUC            0.9905
+  accuracy@thr   0.9258
+  offset recall  0.7253  <- position robustness
+  MAC            1473962 (0.384 ms floor)
+  params         146187
+  wall clock     22.6 min
+  checkpoint     best_m1g_wide.pt
+==============================================================================
+history -> train_result.json
+EXIT=0 
+ALLDONE 
